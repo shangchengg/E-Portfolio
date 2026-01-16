@@ -1,6 +1,6 @@
 ---
 title: "Brian Li"
-image: images/MGEM_logo.png
+image: images/IMG_6470.jpg
 about:
   template: trestles
   image-width: 20em
@@ -19,8 +19,8 @@ about:
       href: mailto:melser@student.ubc.ca
 ---
 
-Hey there people,
+Hello People!
 
-This is your E-Portfolio landing page. Be sure to upload a professional headshot of yourself, and provide the appropriate links to your professional social media (linkedin, X/Twitter, etc). This is also a good place to provide a short summary of your education, career and interests. If you are associated with a lab or working with a research supervisor, it may be appropriate to provide some information on that here, along with links to relevant websites.
+This is my E-Portfolio landing page. My name is Brian Li, a current MGEM student at UBC. I was born and raised in China, and studied biology and urban forestry for my bachelor's degree. I found geo-spatial analysis is pretty fun and we enjoy the time playing with data. Here are links to my professional social media (linkedin, X/Twitter, etc).
 
-Write something about myself, very exciting.
+Contact me if you have the same interest or looking for any help.
