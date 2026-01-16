@@ -1,5 +1,5 @@
 ---
-title: "My E-Portfolio"
+title: "Brian Li"
 image: images/MGEM_logo.png
 about:
   template: trestles
