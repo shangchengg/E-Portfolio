@@ -10,8 +10,6 @@ website:
         text: Home
       - href: resume.qmd
         text: Resume
-      - href: publications.qmd
-        text: Publications
       - href: content.qmd
         text: Content & Deliverables
 
