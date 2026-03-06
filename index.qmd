@@ -18,6 +18,6 @@ about:
 
 Hello People!
 
-This is my E-Portfolio landing page. My name is Brian Li, a current MGEM student at UBC. I was born and raised in China, and studied biology and urban forestry for my bachelor's degree. I found geo-spatial analysis is pretty fun and we enjoy the time playing with data. Here are links to my professional social media (linkedin, X/Twitter, etc).
+This is my E-Portfolio landing page. My name is Brian Li, a current MGEM student at UBC. I was born and raised in China, and studied biology and urban forestry for my bachelor's degree. I found geo-spatial analysis is pretty fun and we enjoy the time playing with data. Here are links to my professional social media.
 
 Contact me if you have the same interest or looking for any help.
