@@ -1,6 +1,6 @@
 ---
 title: "Brian Li"
-image: images/IMG_6992.jpg
+image: images/IMG_6992.jpeg
 about:
   template: trestles
   image-width: 20em
@@ -13,7 +13,7 @@ about:
       href: https://github.com/shangchengg
     - icon: envelope-at
       text: Email
-      href: Shangcheng Li: shangcheng.li@qq.com
+      href: mailto:shangcheng.li@qq.com
 ---
 
 Hello People!
