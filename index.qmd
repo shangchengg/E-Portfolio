@@ -1,22 +1,19 @@
 ---
 title: "Brian Li"
-image: images/IMG_6470.jpg
+image: images/IMG_6992.jpg
 about:
   template: trestles
   image-width: 20em
   links: 
     - icon: linkedin
       text: LinkedIn
-      href: https://www.linkedin.com/in/ramon-melser-666932129/
-    - icon: twitter
-      text: Twitter/X
-      href: https://x.com/MelserRamon
+      href: www.linkedin.com/in/shangcheng-li-858840245
     - icon: github
       text: GitHub
-      href: https://github.com/ramonmelser
+      href: https://github.com/shangchengg
     - icon: envelope-at
       text: Email
-      href: mailto:melser@student.ubc.ca
+      href: Shangcheng Li: shangcheng.li@qq.com
 ---
 
 Hello People!
