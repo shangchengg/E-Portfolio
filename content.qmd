@@ -90,7 +90,14 @@ The transition map shows the transitions types of land cover between 2019 and 20
 rast_trans <- rast("data/transition_3type.tif")
 
 vals_trans <- c(1, 2, 3, 4)
-labs_trans <- c("Stable Forest", "Regeneration", "Disturbance", "Others")
+
+labs_trans <- c(
+  "Stable Forest",
+  "Regeneration",
+  "Disturbance",
+  "Others"
+)
+
 cols_trans <- c("#2ca02c", "#dce319", "#ff1a1a", "#9e9e9e")
 
 pal_trans <- colorFactor(
@@ -104,8 +111,7 @@ leaflet() %>%
   addRasterImage(rast_trans, colors = pal_trans) %>%
   addLegend(
     position = "bottomright",
-    pal = pal_trans,
-    values = vals_trans,
+    colors = cols_trans,
     labels = labs_trans,
     title = "Transition type",
     opacity = 1
