@@ -6,26 +6,110 @@ editor: visual
 
 # Project 1 - Capstone Deliverables
 
-This is a sample page where you can archive project deliverables. Every header you use will correspond to a tab in the legend - shown on the right-hand side of your screen ("On this page").
+These are deliverables of my MGEM capstone project. The project focus on land cover transition and biomass change in the Mudge and Link study areas using LiDAR and remote sensing data. The study integrates airborne LiDAR metrics, satellite imagery, and forest inventory data to model aboveground biomass and detect land-cover transitions between 2019 and 2024.
 
-If you've produced any GIS layers for your 599 project, this may be a good place to share them as interactive maps through leaflet. Alternatively, you can upload high-res figures showing correlations, box-plots, etc. from your report here, and provide a brief overview of key project results. If you have written some useful functions, you may also want to share those here to demonstrate proficiency in particular coding languages or synergies between notable coding packages.
+By combining machine learning methods with spatial analysis, the project evaluates forest disturbance, regeneration, and stable forest conditions across the landscape. The results provide insights into forest dynamics and demonstrate how remote sensing can support monitoring and management of forest ecosystems.
 
-## Leaflet
+## Land Cover Transition
 
-Sample leaflet - for detailed leaflet instructions, visit the FCOR 599 workshop archive page [here](https://ubc-mgem-fcor599.github.io/FCOR-599-Workshops/Interactive_Maps/leaflet.html).
+The following maps of smoothed land cover classification raster that exhibit land cover distribution over the study area
 
-```{r leaflet, include = FALSE}
-library(dplyr); library(leaflet)
-
-m <- leaflet() %>%
-  addProviderTiles("Esri.WorldImagery") %>%
-  addScaleBar(position = c("bottomleft")) %>%
-  setView(-123.1207, 49.2827, zoom = 11)
+```{r setup, include=FALSE}
+library(terra)
+library(leaflet)
 
 ```
 
-```{r map, echo=FALSE}
-m
+*2019:*
+
+```{r map2019, echo=FALSE, warning=FALSE, message=FALSE}
+rast2019 <- rast("data/classified_2019_smoothed.tif")
+
+# class values and labels
+vals2019 <- c(1,2,3,4,5)
+
+labs2019 <- c(
+  "Broadleaf Forest",
+  "Coniferous Forest",
+  "Non-forest vegetation",
+  "Water",
+  "Others"
+)
+
+cols2019 <- c("#A6D96A", "#33A02C", "#F1A026", "#2B83BA", "#DE3B13")
+
+pal2019 <- colorFactor(cols2019, domain = vals2019)
+
+leaflet() %>%
+  addProviderTiles("Esri.WorldImagery") %>%
+  addRasterImage(rast2019, colors = pal2019) %>%
+  addLegend(
+    position = "bottomright",
+    colors = cols2019,
+    labels = labs2019,
+    title = "Land-cover classes",
+    opacity = 1
+  )
+```
+
+*2024:*
+
+```{r map2024, echo=FALSE, warning=FALSE, message=FALSE}
+rast2024 <- rast("data/classified_2024_smoothed.tif")
+
+# class values and labels
+vals2024 <- c(1,2,3,4,5)
+
+labs2024 <- c(
+  "Broadleaf Forest",
+  "Coniferous Forest",
+  "Non-forest vegetation",
+  "Water",
+  "Others"
+)
+
+cols2024 <- c("#A6D96A", "#33A02C", "#F1A026", "#2B83BA", "#DE3B13")
+
+pal2024 <- colorFactor(cols2024, domain = vals2024)
+
+leaflet() %>%
+  addProviderTiles("Esri.WorldImagery") %>%
+  addRasterImage(rast2024, colors = pal2024) %>%
+  addLegend(
+    position = "bottomright",
+    colors = cols2024,
+    labels = labs2024,
+    title = "Land-cover classes",
+    opacity = 1
+  )
+```
+
+The transition map shows the transitions types of land cover between 2019 and 2024 over the Mudge Island and the Link Island.
+
+```{r map——transition, echo=FALSE, warning=FALSE, message=FALSE}
+rast_trans <- rast("data/transition_3type.tif")
+
+vals_trans <- c(1, 2, 3, 4)
+labs_trans <- c("Stable Forest", "Regeneration", "Disturbance", "Others")
+cols_trans <- c("#2ca02c", "#dce319", "#ff1a1a", "#9e9e9e")
+
+pal_trans <- colorFactor(
+  palette = cols_trans,
+  domain = vals_trans,
+  na.color = "transparent"
+)
+
+leaflet() %>%
+  addProviderTiles("Esri.WorldImagery") %>%
+  addRasterImage(rast_trans, colors = pal_trans) %>%
+  addLegend(
+    position = "bottomright",
+    pal = pal_trans,
+    values = vals_trans,
+    labels = labs_trans,
+    title = "Transition type",
+    opacity = 1
+  )
 ```
 
 ## Code Snippets
