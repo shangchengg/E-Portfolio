@@ -179,16 +179,6 @@ Sample code snippet. Notice that you can provide a toggle to switch between codi
 ## R
 
 ``` (.r)
-library(tidyverse)
-library(terra)
-library(sf)
-library(RStoolbox)
-library(tidyr)
-library(ggplot2)
-library(dplyr)
-library(patchwork)
-library(tibble)
-
 # Read 2019 files
 my_polygons <- vect("classification_data/island_boundary.shp")
 ls_image_1 <- rast("output/classified_2019_smoothed.tif")
@@ -559,12 +549,6 @@ names(stable_prop_r) <- "stable_prop"
 # --- Save outputs ---
 writeRaster(dom_group_r,  "output/stand_dom_group.tif", overwrite = TRUE, datatype="INT1U")
 writeRaster(stable_prop_r,"output/stable_forest_dom_prop.tif", overwrite = TRUE)
-
-# (Optional) save a 2-band GeoTIFF in one file:
-both <- c(dom_group_r, stable_prop_r)
-writeRaster(both, "output/stand_domgroup_and_stableprop.tif", overwrite = TRUE)
-# Quick plot
-plot(stand_trans_r)
 ```
 
 ## Python
@@ -574,21 +558,203 @@ Not Yet Convert
 ```
 :::
 
-## External links
+# Project 2 - Investigating Species at Risk Observations Within Canadian National Parks
 
-You can also provide a frame linking to external websites. For example, here is a Google Earth Engine application I developed - which I embedded in this webpage using the code below:
+Parks Canada has approached our consulting team to assess the occurrence of SAR within Canada’s National Parks. The goal is to better understand the conservation value of existing parks and identify species that may not be adequately represented within current protected area boundaries.
 
-```{code}
+To conduct this analysis, Parks Canada has requested the use of the Global Biodiversity Information Facility (GBIF), a comprehensive biodiversity database that integrates records from citizen science platforms, research datasets, museum collections, and other sources.
 
-<iframe width="900" height="700"
-src="https://ee-melserramon.projects.earthengine.app/view/thermal-analysis-tool">
-</iframe>
+To map endangered mammal occurrences outside national parks and generate evidence-based suggestions for new protected areas.
+
+## Python Code
+
+following section is sampled python code to extract endangered species from the dataset:
+
+``` (.python)
+# load and filter sar data
+sar_df = pd.read_csv("CAN-SAR_database.csv")
+
+# keep only endangered terrestrial mammals
+filtered_sar = sar_df[
+    (sar_df["taxonomic_group"] == "Mammals (terrestrial)") &
+    (sar_df["sara_status"] == "Endangered")
+]
+
+# check results
+print(f"number of endangered terrestrial mammals: {filtered_sar.shape[0]}")
+print(filtered_sar[["species", "common_name"]].head())
+
+# extract scientific names
+species_list = filtered_sar["species"].dropna().unique().tolist()
+print("\nspecies list:", species_list)
+
+
+# download gbif occurrences for all target species
+
+all_results = []
+
+for sp in species_list:
+    print(f"\ndownloading occurrences for: {sp}")
+    offset = 0
+    species_results = []
+    while True:
+        out = occurrences.search(
+            scientificName=sp,
+            country="CA",
+            hasCoordinate=True,
+            hasGeospatialIssue=False,
+            offset=offset
+        )
+        if len(out["results"]) == 0:
+            break
+        species_results.extend(out["results"])
+        offset += len(out["results"])
+        print(f"    {len(species_results)} records downloaded so far...")
+    # store species name
+    for r in species_results:
+        r["species"] = sp
+    all_results.extend(species_results)
+print(f"\ntotal gbif records downloaded: {len(all_results)}")
+
+# convert to geo-dataframe
+
+lat = [r["decimalLatitude"] for r in all_results]
+lon = [r["decimalLongitude"] for r in all_results]
+names = [r["species"] for r in all_results]
+
+occ_gdf = gpd.GeoDataFrame(
+    {"species": names},
+    geometry=gpd.points_from_xy(lon, lat),
+    crs="EPSG:4326"
+)
+
+# add taxonomic group and status
+
+species_to_group = dict(zip(filtered_sar["species"], filtered_sar["taxonomic_group"]))
+species_to_status = dict(zip(filtered_sar["species"], filtered_sar["sara_status"]))
+
+occ_gdf["taxonomic_group"] = occ_gdf["species"].map(species_to_group)
+occ_gdf["sara_status"] = occ_gdf["species"].map(species_to_status)
+
+# load park polygons & match crs
+
+parks_gdf = gpd.read_file("parks.gpkg")
+occ_gdf = occ_gdf.to_crs(parks_gdf.crs)
+
+
+# divide occurrences into species groups
+
+species_groups = occ_gdf.groupby("species")
+
+# convert to dictionary
+species_dict = {sp: group for sp, group in species_groups}
+
+print("species groups found:")
+for sp in species_dict:
+    print(f"{sp}: {len(species_dict[sp])} points")
+
+# create color map for each species
+
+import matplotlib.cm as cm
+import matplotlib.colors as mcolors
+import numpy as np
+
+unique_species = list(species_dict.keys())
+num_species = len(unique_species)
+
+# use a colormap
+cmap = cm.get_cmap('tab20', num_species)
+
+species_color_map = {
+    species: mcolors.to_hex(cmap(i))
+    for i, species in enumerate(unique_species)
+}
+
+species_color_map
+
+# function to plot species with unique colors
+
+species_list = [
+    "Dipodomys ordii",
+    "Marmota vancouverensis",
+    "Myotis lucifugus",
+    "Myotis septentrionalis",
+    "Perimyotis subflavus",
+    "Rangifer tarandus",
+    "Rangifer tarandus caribou",
+    "Rangifer tarandus pearyi",
+    "Reithrodontomys megalotis dychei",
+    "Scapanus townsendii",
+    "Sorex bendirii",
+    "Taxidea taxus jacksoni"
+]
+
+species_color_map = { sp: plt.cm.tab20(i/20) for i, sp in enumerate(species_list) }
+
+
+def plot_species_by_group_all(occ_gdf, parks_gdf, species_colors):
+    fig, ax = plt.subplots(figsize=(13, 13))
+
+    # plot parks
+    parks_gdf.plot(ax=ax, facecolor="lightgreen", edgecolor="black", alpha=0.4)
+
+    # build legend entries
+    handles = []
+
+    for sp, color in species_colors.items():
+        subset = occ_gdf[occ_gdf["species"] == sp]
+
+        # plot points if they exist
+        if len(subset) > 0:
+            subset.plot(
+                ax=ax,
+                color=color,
+                markersize=5
+            )
+
+        # create legend marker
+        handles.append(
+            plt.Line2D(
+                [0], [0],
+                marker="o",
+                color="w",
+                markerfacecolor=color,
+                markersize=8,
+                label=f"{sp} ({len(subset)})"
+            )
+        )
+
+    # add basemap
+    cx.add_basemap(ax, crs=parks_gdf.crs, source=cx.providers.CartoDB.PositronNoLabels)
+
+    # styling
+    ax.set_title("Endangered Mammal Species Observations in Canada", fontsize=16)
+    legend = ax.legend(
+        handles=handles,
+        title="Species",
+        fontsize=9,
+        title_fontsize=11,
+        loc="upper right"
+    )
+    ax.set_axis_off()
+    plt.show()
 ```
 
-The full-screen GEE application is available [here](https://ee-melserramon.projects.earthengine.app/view/thermal-analysis-tool) in case you're interested.
+The following images shows the results:
 
-(To use the GEE tool, navigate to any city you'd like, hit apply filters, and click anywhere on the map to retrieve a time-series of Landsat surface temperature observations for that point. Areas where the maximum temp exceeded 35 degrees Celsius in your date-range are highlighted in red.)
+```{r endagered_species, echo=FALSE, fig.cap="Observed endangered mammal species in Canada", out.width="90%"}
+knitr::include_graphics("images/530_1.png")
 
-```{=html}
-<iframe width="900" height="700" src="https://ee-melserramon.projects.earthengine.app/view/thermal-analysis-tool"></iframe>
+```
+
+```{r species_richness, echo=FALSE, fig.cap="Comparison between endangered mammal sepceis inside parks and outside parks", out.width="90%"}
+knitr::include_graphics("images/530_2.png")
+```
+
+```{r proposed_parks, echo=FALSE, fig.cap="Proposed national parks that capture endangered mammal species clusters in a 10 km buffer", out.width="90%"}
+knitr::include_graphics("images/530_3.png")
+```
+
+```{r stats_new, echo=FALSE, fig.cap="Statistics of observations of existing parks and new-proposed parks", out.width="90%"}
+knitr::include_graphics("images/530_4.png")
 ```
